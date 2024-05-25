@@ -29,7 +29,7 @@ EMAIL_PATTERNS = [
 
 def print_header():
     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    header_art = f"""                                 
+    header_art = f"""                           
 {Fore.CYAN}=================================================
 {Fore.CYAN}== {Style.BRIGHT}Script Title: Email Authenticator: Advanced Email Verification System
 {Fore.CYAN}== {Style.BRIGHT}Created by: DON DOVES [METADOR]
@@ -53,42 +53,26 @@ def generate_realistic_email():
     return email + random.choice(domains)
 
 def is_email_real(email):
-    print(f"Checking if {email} is real...")  # Debug: Start checking email
     if not re.match(r"[^@]+@[^@]+\.[^@]+", email):
-        print(f"Email {email} failed regex check.")  # Debug: Email regex failed
         return False
 
     domain = email.split('@')[1]
-    resolver = dns.resolver.Resolver()
-    resolver.timeout = 5
-    resolver.lifetime = 5
     try:
-        print(f"Resolving MX records for {domain}...")  # Debug: Start DNS lookup
-        records = resolver.resolve(domain, 'MX')
+        records = dns.resolver.resolve(domain, 'MX')
         mx_record = str(records[0].exchange)
-        print(f"MX record found: {mx_record}")  # Debug: MX record found
-    except Exception as e:
-        print(f"Failed to resolve MX records for {domain}: {e}")  # Debug: DNS lookup failed
+    except Exception:
         return False
 
-    server = smtplib.SMTP(timeout=10)  # Set a timeout for SMTP operations
-    server.set_debuglevel(1)  # Set higher debug level to see SMTP communication
     try:
-        print(f"Connecting to SMTP server at {mx_record}...")  # Debug: Start SMTP connection
-        server.connect(mx_record)
-        server.helo(server.local_hostname)
+        server = smtplib.SMTP(mx_record, 587)  # Use port 587
+        server.starttls()  # Secure the connection
+        server.ehlo()  # Identify ourselves to the smtp server
         server.mail('me@domain.com')
         code, message = server.rcpt(str(email))
         server.quit()
-
-        if code == 250:
-            print(f"SMTP server accepted {email}.")  # Debug: Email accepted by SMTP
-            return True
-        else:
-            print(f"SMTP server rejected {email}: {code} {message}")  # Debug: Email rejected by SMTP
-            return False
+        return code == 250
     except Exception as e:
-        print(f"Failed to connect or send to {mx_record}: {e}")  # Debug: SMTP connection failed
+        print(f"Failed to verify {email} due to {str(e)}")
         return False
 
 hit_count = 0
@@ -98,7 +82,6 @@ def check_email_thread():
     global hit_count
     while True:
         email_to_test = generate_realistic_email()
-        print(f"Generated email: {email_to_test}")  # Debug: Email generated
         if is_email_real(email_to_test):
             print(Fore.GREEN + Style.BRIGHT + f"The email {email_to_test} seems to be real.")
             with open('real_emails.txt', 'a') as file:
@@ -109,11 +92,9 @@ def check_email_thread():
         else:
             print(Fore.RED + Style.BRIGHT + f"The email {email_to_test} seems to be fake or inactive.")
 
-# Main Execution
 if __name__ == "__main__":
     init(autoreset=True)
     print_header()
-
     threads = [threading.Thread(target=check_email_thread) for _ in range(THREAD_COUNT)]
     for thread in threads:
         thread.start()

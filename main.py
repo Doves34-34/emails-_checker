@@ -30,13 +30,7 @@ EMAIL_PATTERNS = [
 
 def print_header():
     current_date = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    header_art = f"""
-{Fore.MAGENTA}  _____   ______      ________  _____ 
-{Fore.MAGENTA} |  __ \ / __ \ \    / /  ____|/ ____|
-{Fore.MAGENTA} | |  | | |  | \ \  / /| |__  | (___  
-{Fore.MAGENTA} | |  | | |  | |\ \/ / |  __|  \___ \ 
-{Fore.MAGENTA} | |__| | |__| | \  /  | |____ ____) |
-{Fore.MAGENTA} |_____/ \____/   \/   |______|_____/                                     
+    header_art = f"""                                 
 {Fore.CYAN}=================================================
 {Fore.CYAN}== {Style.BRIGHT}Script Title: Email Authenticator: Advanced Email Verification System
 {Fore.CYAN}== {Style.BRIGHT}Created by: DON DOVES [METADOR]

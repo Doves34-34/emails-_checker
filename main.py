@@ -89,20 +89,21 @@ hit_count_lock = threading.Lock()
 
 
 def check_email_thread():
+    print("Thread started.")  # Confirm thread starts
     global hit_count
     while True:
         email_to_test = generate_realistic_email()
+        print(f"Generated email: {email_to_test}")  # Check email generation
         if is_email_real(email_to_test):
             print(Fore.GREEN + Style.BRIGHT + f"The email {email_to_test} seems to be real.")
             with open('real_emails.txt', 'a') as file:
                 file.write(email_to_test + '\n')
-
             with hit_count_lock:
                 hit_count += 1
-
             print(Fore.YELLOW + Style.BRIGHT + f"Hit count: {hit_count}")
         else:
             print(Fore.RED + Style.BRIGHT + f"The email {email_to_test} seems to be fake or inactive.")
+
 
 
 # Main Execution
@@ -116,5 +117,7 @@ if __name__ == "__main__":
     threads = [threading.Thread(target=check_email_thread) for _ in range(THREAD_COUNT)]
     for thread in threads:
         thread.start()
+
     for thread in threads:
-        thread.join()
+        thread.join()  # Move joins here so all threads can start before any are joined
+
